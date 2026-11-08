@@ -38,7 +38,15 @@ namespace OWASP.WebGoat.NET.WebGoatCoins
         {
             try
             {
-                string error_message = du.AddComment(hiddenFieldProductID.Value, txtEmail.Text, txtComment.Text);
+                string productId = hiddenFieldProductID.Value;
+                DataSet catalogData = du.GetCatalogData();
+                bool isValidProduct = catalogData.Tables.Count > 0 && catalogData.Tables[0].AsEnumerable()
+                    .Any(row => string.Equals(row.Field<string>("productCode"), productId, StringComparison.Ordinal));
+
+                if (!isValidProduct)
+                    throw new InvalidOperationException("Invalid product selection.");
+
+                string error_message = du.AddComment(productId, txtEmail.Text, txtComment.Text);
                 txtComment.Text = error_message;
                 lblMessage.Visible = true;
                 LoadComments();
